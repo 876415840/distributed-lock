@@ -9,7 +9,7 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>distributed_lock</name>
+    <name>distributed-lock</name>
     <description>分布式锁的实现</description>
 
     <parent>
@@ -18,6 +18,17 @@
         <version>2.2.2.RELEASE</version>
         <relativePath/>
     </parent>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <url>http://nexus.renmaitech.cn/repository/snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>releases</id>
+            <url>http://nexus.renmaitech.cn/repository/releases/</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
 
