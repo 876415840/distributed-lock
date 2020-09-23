@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
  */
 @Aspect
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order
 public class DistributeLockAspect {
 
     // TODO:MQH 2020/9/21 根据配置getbean
