@@ -27,4 +27,9 @@ public @interface DistributeLock {
      * 是否阻塞
      */
     boolean block() default false;
+
+    /**
+     * 锁失败异常消息
+     */
+    String errorMsg() default "locked failed.";
 }

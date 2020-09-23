@@ -3,6 +3,7 @@ package com.stephen.lock.interceptor;
 
 import com.stephen.lock.Lock;
 import com.stephen.lock.annotation.DistributeLock;
+import com.stephen.lock.exception.LockedException;
 import org.apache.curator.framework.CuratorFramework;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -49,13 +50,17 @@ public class DistributeLockAspect {
         }
         String key = value + distributeLock.key();
         String guid = String.valueOf(Thread.currentThread().getId());
+        boolean locked;
         if (distributeLock.block()) {
-            lock.blockLock(key, guid);
+            locked = lock.blockLock(key, guid);
         } else {
-            lock.notBlockLock(key, guid);
+            locked = lock.notBlockLock(key, guid);
         }
-        Object obj = point.proceed();
-        lock.release(key, guid);
-        return obj;
+        if (locked) {
+            Object obj = point.proceed();
+            lock.release(key, guid);
+            return obj;
+        }
+        throw new LockedException(distributeLock.errorMsg());
     }
 }
