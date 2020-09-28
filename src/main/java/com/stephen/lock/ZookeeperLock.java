@@ -1,16 +1,13 @@
 package com.stephen.lock;
 
-import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.TreeCache;
-import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooDefs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,25 +24,15 @@ public class ZookeeperLock implements Lock {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperLock.class);
 
+    public static final String ROOT_PATH = "distribute_lock";
+
     public static final String SEPARATOR = "/";
 
     public static final String CHILD_PREFIX = "_lock_child_";
 
     private Map<String, Object> lockMap = new ConcurrentHashMap<>();
 
-    @Value("${zookeeper.server}")
-    private String zookeeperServer;
-    @Value("${zookeeper.baseSleepTimeMs}")
-    private int baseSleepTimeMs;
-    @Value("${zookeeper.sessionTimeoutMs}")
-    private int sessionTimeoutMs;
-    @Value("${zookeeper.maxRetries}")
-    private int maxRetries;
-    @Value("${zookeeper.namespace}")
-    private String namespace;
-    @Value("${zookeeper.rootPath}")
-    private String rootPath;
-
+    @Autowired(required = false)
     private CuratorFramework curatorFramework;
 
     public ZookeeperLock() throws Exception {
@@ -55,22 +42,15 @@ public class ZookeeperLock implements Lock {
     }
 
     private void init() throws Exception {
-        //创建重试策略
-        RetryPolicy retryPolicy = new ExponentialBackoffRetry(baseSleepTimeMs, maxRetries);
-
-        //创建zookeeper客户端
-        curatorFramework = CuratorFrameworkFactory.builder().connectString(zookeeperServer)
-                .sessionTimeoutMs(sessionTimeoutMs)
-                .retryPolicy(retryPolicy)
-                .namespace(namespace)
-                .build();
-
-        curatorFramework.start();
-        if (curatorFramework.checkExists().forPath(rootPath)==null){
+        // TODO:MQH 2020/9/28 选择不同配置使用不同的锁实现 
+        if (curatorFramework == null) {
+            return;
+        }
+        if (curatorFramework.checkExists().forPath(ROOT_PATH)==null){
             curatorFramework.create().creatingParentContainersIfNeeded()
                     .withMode(CreateMode.PERSISTENT)
                     .withACL(ZooDefs.Ids.OPEN_ACL_UNSAFE)
-                    .forPath(rootPath);
+                    .forPath(ROOT_PATH);
         }
     }
 
@@ -196,7 +176,7 @@ public class ZookeeperLock implements Lock {
         if (key == null || key.trim().length() == 0) {
             throw new NullPointerException();
         }
-        StringBuilder sb = new StringBuilder(rootPath);
+        StringBuilder sb = new StringBuilder(ROOT_PATH);
         if (!key.startsWith(SEPARATOR)) {
             sb.append(SEPARATOR);
         }
