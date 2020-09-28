@@ -1,10 +1,16 @@
 package com.stephen.lock;
 
+import org.apache.curator.RetryPolicy;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.TreeCache;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.ZooDefs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @Date 2020/9/14 11:41 上午
  */
 @Service("zookeeper-lock")
-public class ZookeeperLock extends ZookeeperBase implements Lock {
+public class ZookeeperLock implements Lock {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperLock.class);
 
@@ -27,8 +33,45 @@ public class ZookeeperLock extends ZookeeperBase implements Lock {
 
     private Map<String, Object> lockMap = new ConcurrentHashMap<>();
 
+    @Value("${zookeeper.server}")
+    private String zookeeperServer;
+    @Value("${zookeeper.baseSleepTimeMs}")
+    private int baseSleepTimeMs;
+    @Value("${zookeeper.sessionTimeoutMs}")
+    private int sessionTimeoutMs;
+    @Value("${zookeeper.maxRetries}")
+    private int maxRetries;
+    @Value("${zookeeper.namespace}")
+    private String namespace;
+    @Value("${zookeeper.rootPath}")
+    private String rootPath;
+
+    private CuratorFramework curatorFramework;
+
     public ZookeeperLock() throws Exception {
-        super();
+        LOGGER.info("zookeeper init begin...................");
+        init();
+        LOGGER.info("zookeeper init end...................");
+    }
+
+    private void init() throws Exception {
+        //创建重试策略
+        RetryPolicy retryPolicy = new ExponentialBackoffRetry(baseSleepTimeMs, maxRetries);
+
+        //创建zookeeper客户端
+        curatorFramework = CuratorFrameworkFactory.builder().connectString(zookeeperServer)
+                .sessionTimeoutMs(sessionTimeoutMs)
+                .retryPolicy(retryPolicy)
+                .namespace(namespace)
+                .build();
+
+        curatorFramework.start();
+        if (curatorFramework.checkExists().forPath(rootPath)==null){
+            curatorFramework.create().creatingParentContainersIfNeeded()
+                    .withMode(CreateMode.PERSISTENT)
+                    .withACL(ZooDefs.Ids.OPEN_ACL_UNSAFE)
+                    .forPath(rootPath);
+        }
     }
 
     @Override
