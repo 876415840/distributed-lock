@@ -24,7 +24,7 @@ public class ZookeeperLock implements Lock {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperLock.class);
 
-    public static final String ROOT_PATH = "distribute_lock";
+    public static final String ROOT_PATH = "/distribute_lock";
 
     public static final String SEPARATOR = "/";
 
@@ -32,27 +32,9 @@ public class ZookeeperLock implements Lock {
 
     private Map<String, Object> lockMap = new ConcurrentHashMap<>();
 
+    // TODO:MQH 2020/9/28 选择不同配置使用不同的锁实现
     @Autowired(required = false)
     private CuratorFramework curatorFramework;
-
-    public ZookeeperLock() throws Exception {
-        LOGGER.info("zookeeper init begin...................");
-        init();
-        LOGGER.info("zookeeper init end...................");
-    }
-
-    private void init() throws Exception {
-        // TODO:MQH 2020/9/28 选择不同配置使用不同的锁实现 
-        if (curatorFramework == null) {
-            return;
-        }
-        if (curatorFramework.checkExists().forPath(ROOT_PATH)==null){
-            curatorFramework.create().creatingParentContainersIfNeeded()
-                    .withMode(CreateMode.PERSISTENT)
-                    .withACL(ZooDefs.Ids.OPEN_ACL_UNSAFE)
-                    .forPath(ROOT_PATH);
-        }
-    }
 
     @Override
     public boolean blockLock(String key, String guid) {
