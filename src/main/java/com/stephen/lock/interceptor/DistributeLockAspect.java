@@ -4,7 +4,6 @@ package com.stephen.lock.interceptor;
 import com.stephen.lock.Lock;
 import com.stephen.lock.annotation.DistributeLock;
 import com.stephen.lock.exception.LockedException;
-import org.apache.curator.framework.CuratorFramework;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -12,7 +11,6 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 

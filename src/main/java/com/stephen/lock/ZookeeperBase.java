@@ -20,15 +20,15 @@ public class ZookeeperBase {
     private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperBase.class);
 
     @Value("${zookeeper.server}")
-    private String zookeeperServer;
+    protected String zookeeperServer;
     @Value("${zookeeper.baseSleepTimeMs}")
-    private int baseSleepTimeMs;
+    protected int baseSleepTimeMs;
     @Value("${zookeeper.sessionTimeoutMs}")
-    private int sessionTimeoutMs;
+    protected int sessionTimeoutMs;
     @Value("${zookeeper.maxRetries}")
-    private int maxRetries;
+    protected int maxRetries;
     @Value("${zookeeper.namespace}")
-    private String namespace;
+    protected String namespace;
     @Value("${zookeeper.rootPath}")
     protected String rootPath;
 
