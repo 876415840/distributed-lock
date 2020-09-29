@@ -4,7 +4,6 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.ZooDefs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +31,9 @@ public class ZookeeperLock implements Lock {
 
     private Map<String, Object> lockMap = new ConcurrentHashMap<>();
 
+    private TreeCache treeCache;
     // TODO:MQH 2020/9/28 选择不同配置使用不同的锁实现
+    // TODO:MQH 2020/9/29 为null情况处理
     @Autowired(required = false)
     private CuratorFramework curatorFramework;
 
@@ -54,18 +55,21 @@ public class ZookeeperLock implements Lock {
     }
 
     private void lock(final String parentPath, int centerNodeSort) throws Exception {
+
         while (true) {
             List<String> childs = curatorFramework.getChildren().forPath(parentPath);
             // 有子节点比当前子节点更早创建
             boolean locked = childs.stream().anyMatch(nodeName -> Integer.parseInt(nodeName.replace(CHILD_PREFIX, "")) < centerNodeSort);
             if (!locked) {
                 LOGGER.debug("lock success. parentPath[{}]", parentPath);
+                if (treeCache == null) {
+                    listenerNode();
+                }
                 return;
             }
             // 注册父节点监听事件
             Object obj = lockMap.get(parentPath);
             synchronized(obj) {
-                listenerNode(parentPath);
                 obj.wait();
             }
         }
@@ -75,8 +79,8 @@ public class ZookeeperLock implements Lock {
     public boolean notBlockLock(String key, String guid) {
         String path = joinKey(key);
         try {
-            String node = curatorFramework.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL_SEQUENTIAL).forPath(path, getData(guid));
-            LOGGER.debug("[not block lock] node create success. path[{}] node[{}]", path, node);
+            String node = curatorFramework.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(path, getData(guid));
+            LOGGER.debug("[not block lock] lock and node create success. path[{}] node[{}]", path, node);
             return true;
         } catch (Exception e) {
             LOGGER.error("[not block lock] node create error. path[{}]", path, e);
@@ -85,26 +89,29 @@ public class ZookeeperLock implements Lock {
     }
 
     /**
-     * 监听父节点下的节点删除动作，触发后唤醒所有线程
-     * @param parentPath
-     * @return void
+     * 监听根点下的节点删除动作，触发后唤醒指定锁的所有线程
      * @author MengQingHao
      * @date 2020/9/21 10:50 上午
      */
-    private void listenerNode(String parentPath) {
-        TreeCache treeCache = new TreeCache(curatorFramework, parentPath);
+    private void listenerNode() throws Exception {
+        treeCache = new TreeCache(curatorFramework, ROOT_PATH);
+        treeCache.start();
         treeCache.getListenable().addListener((client, event) -> {
             ChildData eventData = event.getData();
+            String path = getPath(eventData);
             switch (event.getType()) {
                 case NODE_ADDED:
-                    LOGGER.warn("add node[{}] data[{}]", eventData.getPath(), new String(eventData.getData()));
+                    LOGGER.debug("add node[{}] data[{}]", path, getData(eventData));
                     break;
                 case NODE_UPDATED:
-                    LOGGER.warn("update node[{}] data[{}]", eventData.getPath(), new String(eventData.getData()));
+                    LOGGER.debug("update node[{}] data[{}]", path, getData(eventData));
                     break;
                 case NODE_REMOVED:
-                    LOGGER.warn("update node[{}]", eventData.getPath());
-                    lockMap.get(parentPath).notifyAll();
+                    LOGGER.debug("remove node[{}]", path);
+                    Object obj = lockMap.get(path.substring(0, path.indexOf(CHILD_PREFIX)-1));
+                    synchronized(obj) {
+                        obj.notifyAll();
+                    }
                     break;
                 default:
                     break;
@@ -121,7 +128,7 @@ public class ZookeeperLock implements Lock {
                 return deleteNode(guid, path);
             }
             for (String child : childs) {
-                if (deleteNode(guid, child)) {
+                if (deleteNode(guid, path + SEPARATOR + child)) {
                     return true;
                 }
             }
@@ -140,7 +147,7 @@ public class ZookeeperLock implements Lock {
             return true;
         }
         if (data == null) {
-            LOGGER.error("[release] node delete error. old guid is null, new guid not null. path[{}]", path);
+            LOGGER.warn("[release] node delete error. old guid is null, new guid not null. path[{}]", path);
             return false;
         }
         String newGuid = new String(data);
@@ -149,7 +156,7 @@ public class ZookeeperLock implements Lock {
             LOGGER.debug("[release] node delete success. path[{}]", path);
             return true;
         } else {
-            LOGGER.error("[release] node delete error. guid not equals. path[{}]. old guid[{}]. new guid[{}]", path, newGuid, guid);
+            LOGGER.warn("[release] node delete error. guid not equals. path[{}]. old guid[{}]. new guid[{}]", path, newGuid, guid);
             return false;
         }
     }
@@ -171,6 +178,20 @@ public class ZookeeperLock implements Lock {
             return null;
         }
         return data.getBytes();
+    }
+
+    private String getPath(ChildData eventData) {
+        if (eventData == null) {
+            return null;
+        }
+        return eventData.getPath();
+    }
+
+    private String getData(ChildData eventData) {
+        if (eventData == null) {
+            return null;
+        }
+        return new String(eventData.getData());
     }
 
 }
