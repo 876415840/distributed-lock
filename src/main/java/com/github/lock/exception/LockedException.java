@@ -1,4 +1,4 @@
-package com.stephen.lock.exception;
+package com.github.lock.exception;
 
 /**
  * @Description: 占用锁异常

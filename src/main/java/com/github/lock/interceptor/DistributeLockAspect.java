@@ -1,9 +1,9 @@
-package com.stephen.lock.interceptor;
+package com.github.lock.interceptor;
 
 
-import com.stephen.lock.Lock;
-import com.stephen.lock.annotation.DistributeLock;
-import com.stephen.lock.exception.LockedException;
+import com.github.lock.Lock;
+import com.github.lock.annotation.DistributeLock;
+import com.github.lock.exception.LockedException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -32,7 +32,7 @@ public class DistributeLockAspect {
 //    @Value("${lock.config}")
 //    private String lockConfig;
 
-    @Pointcut("@annotation(com.stephen.lock.annotation.DistributeLock)")
+    @Pointcut("@annotation(com.github.lock.annotation.DistributeLock)")
     private void distributeLock() {}
 
     @Around("distributeLock()")

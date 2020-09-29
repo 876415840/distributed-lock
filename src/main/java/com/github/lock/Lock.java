@@ -1,4 +1,4 @@
-package com.stephen.lock;
+package com.github.lock;
 
 /**
  * @Description: 锁

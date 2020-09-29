@@ -1,4 +1,4 @@
-package com.stephen.lock.annotation;
+package com.github.lock.annotation;
 
 import java.lang.annotation.*;
 
