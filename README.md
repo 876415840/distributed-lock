@@ -5,7 +5,7 @@
 * maven依赖
 ```xml
 <dependency>
-    <groupId>com.github</groupId>
+    <groupId>com.github.876415840</groupId>
     <artifactId>distributed-lock</artifactId>
     <version>1.0.0</version>
 </dependency>
@@ -38,9 +38,9 @@ public class ZookeeperConfig {
 ```java
 @Service
 public class TestService {
-@DistributeLock(value = "testLock", key = "#id", block = true)
-public void testLock(String id) {
-    // do something
-}
+    @DistributeLock(value = "testLock", key = "#id", block = true)
+    public void testLock(String id) {
+        // do something
+    }
 }
 ```
