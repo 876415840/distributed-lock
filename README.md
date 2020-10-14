@@ -36,6 +36,8 @@ public class ZookeeperConfig {
 
 * 锁使用
 ```java
+// 启动类加注解 @ComponentScan(basePackages = {"com.github.lock"}) 扫描指定包路径
+
 @Service
 public class TestService {
     @DistributeLock(value = "testLock", key = "#id", block = true)
