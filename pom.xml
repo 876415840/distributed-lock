@@ -7,11 +7,23 @@
     <groupId>com.github.876415840</groupId>
     <artifactId>distributed-lock</artifactId>
     <version>1.0.0</version>
-    <packaging>jar</packaging>
 
     <name>distributed-lock</name>
     <url>https://github.com/876415840/distributed-lock</url>
     <description>分布式锁的实现</description>
+
+    <scm>
+        <url>https://github.com/876415840/distributed-lock</url>
+        <connection>scm:git:https://github.com/876415840/distributed-lock.git</connection>
+        <developerConnection>scm:git:git@github.com:876415840/distributed-lock.git</developerConnection>
+        <tag>V-1.0.0</tag>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>stephenMeng</name>
+        </developer>
+    </developers>
 
     <licenses>
         <license>
@@ -21,19 +33,80 @@
         </license>
     </licenses>
 
-    <scm>
-        <url>https://github.com/876415840/distributed-lock</url>
-        <connection>scm:git:https://github.com/876415840/distributed-lock.git</connection>
-        <developerConnection>scm:git:git@github.com:876415840/distributed-lock.git</developerConnection>
-    </scm>
+    <properties>
+        <encoding>UTF-8</encoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+        <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
+        <maven.build.timestamp.format>yyyyMMdd.HHmm</maven.build.timestamp.format>
 
-    <developers>
-        <developer>
-            <name>stephenMeng</name>
-            <email>mqhbeijing@163.com</email>
-            <url>https://github.com/876415840/distributed-lock</url>
-        </developer>
-    </developers>
+        <spring.version>4.2.5.RELEASE</spring.version>
+        <java.version>1.8</java.version>
+        <source.version>1.8</source.version>
+        <target.version>1.8</target.version>
+    </properties>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>${basedir}/src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.2</version>
+                <configuration>
+                    <source>${source.version}</source>
+                    <target>${target.version}</target>
+                    <encoding>${encoding}</encoding>
+                    <failOnError>true</failOnError>
+                    <verbose>false</verbose>
+                    <fork>false</fork>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <version>${project.version}</version>
+                            <buildTimestamp>${buildTimestamp}</buildTimestamp>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -41,13 +114,6 @@
         <version>2.2.2.RELEASE</version>
         <relativePath/>
     </parent>
-
-    <properties>
-        <encoding>UTF-8</encoding>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
-        <java.version>1.8</java.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -105,8 +171,7 @@
             </distributionManagement>
             <build>
                 <plugins>
-                    <!-- 发布Jar到Maven仓库 Begin -->
-                    <!--生成Source-->
+                    <!-- Source -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
@@ -120,7 +185,7 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <!--生成Javadoc-->
+                    <!-- Javadoc -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
@@ -134,7 +199,7 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <!--Maven GPG插件用于使用以下配置对组件进行签名-->
+                    <!-- Gpg Signature -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
@@ -149,7 +214,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <!-- 发布Jar到Maven仓库 End -->
                 </plugins>
             </build>
         </profile>
