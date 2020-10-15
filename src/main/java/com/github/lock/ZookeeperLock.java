@@ -16,7 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 基于zookeeper实现的锁
  * @author stephen
- * @date 2020/9/14 11:41 上午
  */
 @Service("zookeeper-lock")
 public class ZookeeperLock implements Lock {
@@ -90,7 +89,6 @@ public class ZookeeperLock implements Lock {
     /**
      * 监听根点下的节点删除动作，触发后唤醒指定锁的所有线程
      * @author stephen
-     * @date 2020/9/21 10:50 上午
      */
     private void listenerNode() throws Exception {
         treeCache = new TreeCache(curatorFramework, ROOT_PATH);

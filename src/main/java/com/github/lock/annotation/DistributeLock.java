@@ -8,23 +8,23 @@ import java.lang.annotation.*;
 public @interface DistributeLock {
 
     /**
-     * key前缀
      * 没有设值情况，取class.getName() + # + method.getName()
+     * @return key前缀
      */
     String value() default "";
 
     /**
-     * key后缀
+     * @return key后缀
      */
     String key() default "";
 
     /**
-     * 是否阻塞
+     * @return 是否阻塞
      */
     boolean block() default false;
 
     /**
-     * 锁失败异常消息
+     * @return 锁失败异常消息
      */
     String errorMsg() default "locked failed.";
 }
