@@ -16,21 +16,17 @@ import org.springframework.stereotype.Component;
 import java.lang.reflect.Method;
 
 /**
- * @Description: 拦截
- * @Author MengQingHao
- * @Date 2020/9/11 6:06 下午
+ * 拦截
+ * @author stephen
+ * @date 2020/9/11 6:06 下午
  */
 @Aspect
 @Component
 @Order
 public class DistributeLockAspect {
 
-    // TODO:MQH 2020/9/21 根据配置getbean
     @Autowired
     private Lock lock;
-    
-//    @Value("${lock.config}")
-//    private String lockConfig;
 
     @Pointcut("@annotation(com.github.lock.annotation.DistributeLock)")
     private void distributeLock() {}

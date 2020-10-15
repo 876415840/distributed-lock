@@ -1,9 +1,9 @@
 package com.github.lock;
 
 /**
- * @Description: 锁
- * @Author MengQingHao
- * @Date 2020/9/14 11:29 上午
+ * 锁
+ * @author stephen
+ * @date 2020/9/14 11:29 上午
  */
 public interface Lock {
 
@@ -12,7 +12,7 @@ public interface Lock {
      * @param key 锁的唯一标识
      * @param guid 客户端的唯一标识
      * @return boolean
-     * @author MengQingHao
+     * @author stephen
      * @date 2020/9/14 11:32 上午
      */
     boolean blockLock(String key, String guid);
@@ -22,7 +22,7 @@ public interface Lock {
      * @param key 锁的唯一标识
      * @param guid 客户端的唯一标识
      * @return boolean
-     * @author MengQingHao
+     * @author stephen
      * @date 2020/9/14 11:32 上午
      */
     boolean notBlockLock(String key, String guid);
@@ -31,10 +31,9 @@ public interface Lock {
      * 释放锁
      * @param key 锁的唯一标识
      * @param guid 客户端的唯一标识
-     * @return boolean
-     * @author MengQingHao
+     * @author stephen
      * @date 2020/9/14 11:34 上午
      */
-    boolean release(String key, String guid);
+    void release(String key, String guid);
 
 }

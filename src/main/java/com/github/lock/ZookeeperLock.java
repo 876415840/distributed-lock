@@ -14,9 +14,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @Description: 基于zookeeper实现的锁
- * @Author MengQingHao
- * @Date 2020/9/14 11:41 上午
+ * 基于zookeeper实现的锁
+ * @author stephen
+ * @date 2020/9/14 11:41 上午
  */
 @Service("zookeeper-lock")
 public class ZookeeperLock implements Lock {
@@ -32,9 +32,8 @@ public class ZookeeperLock implements Lock {
     private Map<String, Object> lockMap = new ConcurrentHashMap<>();
 
     private TreeCache treeCache;
-    // TODO:MQH 2020/9/28 选择不同配置使用不同的锁实现
-    // TODO:MQH 2020/9/29 为null情况处理
-    @Autowired(required = false)
+
+    @Autowired
     private CuratorFramework curatorFramework;
 
     @Override
@@ -90,7 +89,7 @@ public class ZookeeperLock implements Lock {
 
     /**
      * 监听根点下的节点删除动作，触发后唤醒指定锁的所有线程
-     * @author MengQingHao
+     * @author stephen
      * @date 2020/9/21 10:50 上午
      */
     private void listenerNode() throws Exception {
@@ -120,23 +119,24 @@ public class ZookeeperLock implements Lock {
     }
 
     @Override
-    public boolean release(String key, String guid) {
+    public void release(String key, String guid) {
         String path = joinKey(key);
         try {
             List<String> childs = curatorFramework.getChildren().forPath(path);
             if (childs.isEmpty()) {
-                return deleteNode(guid, path);
-            }
-            for (String child : childs) {
-                if (deleteNode(guid, path + SEPARATOR + child)) {
-                    return true;
+                if (deleteNode(guid, path)) {
+                    return;
+                }
+            } else {
+                for (String child : childs) {
+                    if (deleteNode(guid, path + SEPARATOR + child)) {
+                        return;
+                    }
                 }
             }
             LOGGER.error("[release] node delete error. not find. path[{}] guid[{}]", path, guid);
-            return false;
         } catch (Exception e) {
             LOGGER.error("[release] node delete error. path[{}]", path, e);
-            return false;
         }
     }
 

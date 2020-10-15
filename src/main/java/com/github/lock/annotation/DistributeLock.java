@@ -2,11 +2,6 @@ package com.github.lock.annotation;
 
 import java.lang.annotation.*;
 
-/**
- * @Description: 所注解
- * @Author MengQingHao
- * @Date 2020/9/11 5:27 下午
- */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
